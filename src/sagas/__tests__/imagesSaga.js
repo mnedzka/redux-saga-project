@@ -34,3 +34,22 @@ test('should load and handle images in case of success', async () => {
   expect(api.fetchImages.mock.calls.length).toBe(1);
   expect(dispatchedActions).toContainEqual(setImages(mockedImages));
 });
+
+test('should handle image load errors in case of failure', async () => {
+  const dispatchedActions = [];
+
+  // we simulate an error by rejecting the promise
+  // then we assert if our saga dispatched the action(s) correctly
+  const error = 'API server is down';
+  api.fetchImages = jest.fn(() => Promise.reject(error));
+
+  const fakeStore = {
+    getState: () => ({ nextPage: 1 }),
+    dispatch: action => dispatchedActions.push(action),
+  };
+
+  await runSaga(fakeStore, handleImagesLoad).done;
+
+  expect(api.fetchImages.mock.calls.length).toBe(1);
+  expect(dispatchedActions).toContainEqual(setError(error));
+});
