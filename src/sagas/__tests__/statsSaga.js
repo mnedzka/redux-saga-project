@@ -22,3 +22,14 @@ test('should load and set the image stats in case of success', async () => {
   expect(api.fetchImageStats.mock.calls.length).toBe(1);
   expect(dispatchedActions).toContainEqual(setImageStats(fakeId, fakeDownloads));
 });
+
+export default function* watchStatsRequest() {
+  while (true) {
+    // we get the action here
+    const { images } = yield take(IMAGES.LOAD_SUCCESS);
+
+    for (let i = 0; i < images.length; i++) {
+      yield fork(handleStatsRequest, images[i].id);
+    }
+  }
+}
